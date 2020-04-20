@@ -1,0 +1,71 @@
+#comments
+#Real-time Coronavirus Outbreak notification
+#From url= 'https://www.mohfw.gov.in/' i.e Indian Government Official Site
+#Abhay Kumar --23 March 2020--
+#I used the --- plyer 1.4.2 --- Package for Notification Purpose
+#I used --- requests 2.23.0 --- Package for Getting Real time Data from a url
+#I used Beautiful Soup --- bs4 0.0.1 --- for Data and Statical purpose
+
+from plyer import notification
+import requests
+from bs4 import BeautifulSoup
+import time
+
+def notifyME(title,message):
+    notification.notify(
+        title=title,
+        message=message,
+        app_icon="D:\Covid19\coronaicon.ico",
+        timeout=10
+    )
+
+def getData(url):
+    r=requests.get(url)
+    return r.text
+
+if __name__ == "__main__":
+    while True:
+        #notifyME("Corona-News","We have to stay at home for our safety.") // just a notification
+        myHtmlData=getData('https://www.mohfw.gov.in/')
+
+        #print(myHtmlData) #//all html data or source code of url's page
+        soup = BeautifulSoup(myHtmlData, 'html.parser')
+        #print(soup.prettify()) //just prettify way of showing
+
+        mydatastr=""  
+        for tr in soup.find_all('tbody')[0].find_all('tr'):
+            #print(tr.get_text()) //text of body of a table2
+            mydatastr+=tr.get_text()
+        #print(mydatastr)
+        mydatastr=mydatastr[1:]
+        itemList = mydatastr.split("\n\n")
+        #print(itemList) #//whole table data for all states 
+
+        states=['Bihar','Delhi','Uttar Pradesh','West Bengal']
+        TotalConfirmedCase=0
+        TotalCured=0
+        TotalDied=0
+        for item in itemList[0:33]:
+            DataList=item.split('\n')
+            if DataList[1] in states:
+                print(DataList) #//table data for specified cities
+                nTitle= 'Cases Of Covid-19 Till Now'
+                nText= f"State-{DataList[1]}\nConfirmedCase : {DataList[2]} \nCured : {DataList[3]}\nDeath : {DataList[4]}"
+                TotalConfirmedCase+=int(DataList[2])
+                TotalCured+=int(DataList[3])
+                TotalDied+=int(DataList[4])
+                notifyME(nTitle,nText)
+                time.sleep(2)
+            else:
+                TotalConfirmedCase+=int(DataList[2])
+                TotalCured+=int(DataList[3])
+                TotalDied+=int(DataList[4])
+        TTitle='Total report of India'
+        TText= f"TotalConfirmedCase : {TotalConfirmedCase}\nCured : {TotalCured}\nDeath : {TotalDied}"
+        notifyME(TTitle,TText)
+        time.sleep(2)
+        time.sleep(1800)
+
+#time for updation is 30 minute
+#Real-time Coronavirus(COVID19) Outbreak notification to desktop From "https://www.mohfw.gov.in/" i.e Indian Government Official Site,
+#Notification About no of cases ,Cured no, Death no. for all the states.
